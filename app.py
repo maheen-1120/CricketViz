@@ -2,9 +2,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+import streamlit as st
 
-
-df = pd.read_csv(r"Cricketdata.csv")
+df = pd.read_csv("Cricketdata.csv")
 
 numeric_cols = ['Strike Rate', 'Bowling Average', 'Matches', 'Runs', 'Wickets', 'Batting Average']
 for col in numeric_cols:
@@ -40,7 +40,19 @@ reg_runs.fit(X, df['Runs'] / df['Matches'])
 reg_wickets = RandomForestRegressor(random_state=42)
 reg_wickets.fit(X, df['Wickets'] / df['Matches'])
 
-def predict_player(name, country, matches, runs, wickets, bat_avg, bowl_avg, strike_rate):
+st.title("CricketViz: Cricket Player Prediction App")
+st.write("Predicts player role, selection, and performance in next match based on stats.")
+
+name = st.text_input("Player Name")
+country = st.text_input("Country")
+matches = st.number_input("Matches Played", min_value=0)
+runs = st.number_input("Total Runs", min_value=0)
+wickets = st.number_input("Total Wickets", min_value=0)
+bat_avg = st.number_input("Batting Average", min_value=0.0, format="%.2f")
+bowl_avg = st.number_input("Bowling Average", min_value=0.0, format="%.2f")
+strike_rate = st.number_input("Strike Rate", min_value=0.0, format="%.2f")
+
+if st.button("Predict"):
     player_df = pd.DataFrame([{
         'Name': name,
         'Country': country,
@@ -56,10 +68,9 @@ def predict_player(name, country, matches, runs, wickets, bat_avg, bowl_avg, str
     player_df['Predicted_Selected'] = clf.predict(player_df[features])
     player_df['Predicted_Runs_Next_Match'] = reg_runs.predict(player_df[features])
     player_df['Predicted_Wickets_Next_Match'] = reg_wickets.predict(player_df[features])
-    result = player_df[['Name', 'Country', 'Role_from_Cluster',
-                        'Predicted_Selected', 'Predicted_Runs_Next_Match',
-                        'Predicted_Wickets_Next_Match']]
-    return result.to_dict(orient="records")[0]
-
-def greet(name):
-  return f"Hello{name}!"
+    
+    st.subheader("Prediction Results")
+    st.write(f"**Role:** {player_df['Role_from_Cluster'][0]}")
+    st.write(f"**Selected in Team:** {'Yes' if player_df['Predicted_Selected'][0]==1 else 'No'}")
+    st.write(f"**Predicted Runs Next Match:** {player_df['Predicted_Runs_Next_Match'][0]:.2f}")
+    st.write(f"**Predicted Wickets Next Match:** {player_df['Predicted_Wickets_Next_Match'][0]:.2f}")

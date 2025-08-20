@@ -3,8 +3,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
-import streamlit as st
 import matplotlib.pyplot as plt
+import streamlit as st
 
 df = pd.read_csv("Cricketdata.csv")
 
@@ -21,7 +21,6 @@ X_scaled = scaler.fit_transform(df[features])
 
 kmeans = KMeans(n_clusters=3, random_state=0, n_init=10)
 df['Cluster'] = kmeans.fit_predict(X_scaled)
-
 cluster_role_map = {}
 for c in df['Cluster'].unique():
     cluster_role_map[c] = df[df['Cluster']==c]['Role'].mode()[0]
@@ -73,4 +72,26 @@ if st.button("Predict"):
     cluster = kmeans.predict(player_scaled)
     role = cluster_role_map[cluster[0]]
     selected = clf.predict(player_scaled)[0]
-    predicted_runs = reg_runs
+    predicted_runs = reg_runs.predict(player_scaled)[0]
+    predicted_wickets = reg_wickets.predict(player_scaled)[0]
+
+    st.subheader("Prediction Results")
+    st.write(f"**Role:** {role}")
+    st.write(f"**Selected in Team:** {'Yes' if selected==1 else 'No'}")
+    st.write(f"**Predicted Runs Next Match:** {predicted_runs:.2f}")
+    st.write(f"**Predicted Wickets Next Match:** {predicted_wickets:.2f}")
+
+    fig, ax = plt.subplots()
+    ax.bar(['Predicted Runs', 'Predicted Wickets'],
+           [predicted_runs, predicted_wickets],
+           color=['#AEC6CF', '#77DD77'])
+    ax.set_ylabel("Performance")
+    ax.set_title(f"Prediction for {name}")
+    st.pyplot(fig)
+
+    fig2, ax2 = plt.subplots()
+    ax2.plot([0, matches], [0, runs], marker='o', linewidth=2, color='#556B2F')
+    ax2.set_xlabel("Matches")
+    ax2.set_ylabel("Runs")
+    ax2.set_title(f"Career Trend: {name}")
+    st.pyplot(fig2)

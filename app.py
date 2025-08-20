@@ -11,7 +11,7 @@ columns = [
 ]
 
 df = pd.read_csv(
-    r"C:\Users\SOHAM\OneDrive\Documents\internship_AIML\data.csv",
+    r"Cricketdata.csv",
     names=columns
 )
 
@@ -59,3 +59,4 @@ df_plot = df_plot.melt("Matches Played", var_name="Metric", value_name="Value")
 sns.lineplot(data=df_plot, x="Matches Played", y="Value", hue="Metric", ax=ax)
 ax.set_title(f"{player_name} - Performance Trends")
 st.pyplot(fig)
+

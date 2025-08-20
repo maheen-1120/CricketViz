@@ -4,7 +4,13 @@ import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("Cricketdata.csv")
+columns = [
+    "Player Name", "Role", "Country", "Matches Played",
+    "Total Runs", "Total Wickets", "Batting Average",
+    "Bowling Average", "Strike Rate"
+]
+
+df = pd.read_csv("Cricketdata.csv", names=columns, header=None, sep=r"\s*\t\s*")
 
 def predict_role(runs, wickets):
     if runs > 2000 and wickets > 100:
@@ -59,4 +65,3 @@ if not df[df["Player Name"] == player_name].empty:
     st.pyplot(fig)
 else:
     st.error("Player not found in dataset.")
-

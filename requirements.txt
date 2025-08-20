@@ -3,4 +3,5 @@ scikit-learn
 streamlit
 gradio
 numpy
+seaborn
 matplotlib

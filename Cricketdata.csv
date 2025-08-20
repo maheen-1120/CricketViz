@@ -1,0 +1,50 @@
+Name,Role,Country,Matches,Runs,Wickets,Batting Average,Bowling Average,Strike Rate
+Virat Kohli,Batsman,India,275,12898,4,46.9,0.01,156.42
+Babar Azam,Batsman,Pakistan,112,5409,0,48.3,0.0,160.95
+Joe Root,Batsman,England,158,11168,30,70.68,0.19,235.27
+David Warner,Batsman,Australia,109,6930,0,63.58,0.0,211.83
+Kane Williamson,Batsman,New Zealand,94,8124,29,86.43,0.31,287.41
+Jasprit Bumrah,Bowler,India,36,162,159,4.5,4.42,15.0
+Shaheen Afridi,Bowler,Pakistan,29,200,105,6.9,3.62,22.99
+Mitchell Starc,Bowler,Australia,77,1200,333,15.58,4.32,51.95
+Trent Boult,Bowler,New Zealand,78,750,317,9.62,4.06,35.9
+Pat Cummins,Bowler,Australia,55,850,239,15.45,4.35,51.52
+Ben Stokes,All-Rounder,England,97,6117,197,63.07,2.03,233.62
+Shakib Al Hasan,All-Rounder,Bangladesh,66,4454,231,67.48,3.5,224.97
+Hardik Pandya,All-Rounder,India,11,532,17,48.36,1.55,161.21                              (r"C:\Users\SOHAM\OneDrive\Documents\internship_AIML\data.csv")
+Ravindra Jadeja,All-Rounder,India,67,3000,275,44.78,4.1,149.25
+Jason Holder,All-Rounder,West Indies,64,2600,155,40.63,2.42,135.42
+Steve Smith,Batsman,Australia,104,9320,17,89.62,0.16,298.14
+Rohit Sharma,Batsman,India,56,3677,2,65.66,0.04,218.4
+KL Rahul,Batsman,India,50,2600,0,52.0,0.0,173.33
+Shubman Gill,Batsman,India,20,1254,0,62.7,0.0,209.0
+Marnus Labuschagne,Batsman,Australia,43,3984,13,92.65,0.3,308.51
+Kagiso Rabada,Bowler,South Africa,60,800,280,13.33,4.67,44.44
+Anrich Nortje,Bowler,South Africa,19,180,70,9.47,3.68,31.58
+Tim Southee,Bowler,New Zealand,90,1700,370,18.89,4.11,62.96
+James Anderson,Bowler,England,183,1250,700,6.83,3.83,22.77
+Stuart Broad,Bowler,England,167,3500,604,20.96,3.62,69.96
+Mohammad Nabi,All-Rounder,Afghanistan,15,500,25,33.33,1.67,111.11
+Andre Russell,All-Rounder,West Indies,1,2,0,2.0,0.0,6.67
+Sam Curran,All-Rounder,England,24,741,47,30.88,1.96,102.92
+Marcus Stoinis,All-Rounder,Australia,19,548,16,28.84,0.84,96.19
+Colin de Grandhomme,All-Rounder,New Zealand,29,1430,49,49.31,1.69,164.94
+Faf du Plessis,Batsman,South Africa,69,4163,0,60.34,0.0,199.62
+Hashim Amla,Batsman,South Africa,124,9282,0,74.85,0.0,257.92
+Cheteshwar Pujara,Batsman,India,103,7195,0,69.86,0.0,239.55
+Ajinkya Rahane,Batsman,India,85,5077,0,59.73,0.0,204.78
+Ross Taylor,Batsman,New Zealand,112,7683,0,68.6,0.0,235.09
+Nathan Lyon,Bowler,Australia,126,1230,496,9.76,3.94,34.07
+Rashid Khan,Bowler,Afghanistan,5,106,34,21.2,6.8,70.67
+Yuzvendra Chahal,Bowler,India,2,5,2,2.5,1.0,8.33
+Kuldeep Yadav,Bowler,India,8,80,34,10.0,4.25,33.33
+Mustafizur Rahman,Bowler,Bangladesh,16,90,31,5.63,1.94,18.75
+Chris Woakes,All-Rounder,England,45,1685,130,37.44,2.89,124.89
+Moeen Ali,All-Rounder,England,68,3000,195,44.12,2.87,147.06
+Thisara Perera,All-Rounder,Sri Lanka,6,203,11,33.83,1.83,112.22
+Angelo Mathews,All-Rounder,Sri Lanka,101,7158,33,70.88,0.33,236.06
+Dwayne Bravo,All-Rounder,West Indies,40,2200,86,55.0,2.15,183.33
+Mohammed Shami,Bowler,India,64,300,229,4.69,3.58,15.63
+Krunal Pandya,All-Rounder,India,5,194,0,38.8,0.0,129.33
+Suryakumar Yadav,All-rounder,India,238,7111,389,29.87,1.63,99.56
+Arjun Malhotra,All-Rounder,India,28,1240,42,44.29,1.5,147.62

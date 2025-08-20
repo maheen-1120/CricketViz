@@ -1,68 +1,61 @@
-import streamlit as st
 import pandas as pd
+import numpy as np
+import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv(r"Cricketdata.csv")
+columns = [
+    "Player Name", "Role", "Country", "Matches Played",
+    "Total Runs", "Total Wickets", "Batting Average",
+    "Bowling Average", "Strike Rate"
+]
+
+df = pd.read_csv(
+    r"C:\Users\SOHAM\OneDrive\Documents\internship_AIML\data.csv",
+    names=columns
+)
 
 def predict_role(row):
-    if row['Total Wickets'] >= 150 and row['Batting Average'] < 25:
-        return "Bowler"
-    elif row['Total Runs'] >= 4000 and row['Batting Average'] >= 35:
-        return "Batsman"
-    elif row['Total Runs'] >= 2000 and row['Total Wickets'] >= 50:
+    if row["Total Runs"] > 2000 and row["Total Wickets"] > 100:
         return "All-Rounder"
+    elif row["Total Runs"] > row["Total Wickets"] * 20:
+        return "Batsman"
     else:
-        return "Batsman" if row['Batting Average'] > row['Bowling Average'] else "Bowler"
+        return "Bowler"
 
-df['Predicted Role'] = df.apply(predict_role, axis=1)
-
-def is_selected(row):
-    role = row['Predicted Role']
-    bat_avg = row['Batting Average']
-    bowl_avg = row['Bowling Average']
-    sr = row['Strike Rate']
-    wickets = row['Total Wickets']
-    if role in ['Batsman', 'All-Rounder']:
-        if bat_avg >= 35 and sr >= 120:
-            return "Yes"
-    if role in ['Bowler', 'All-Rounder']:
-        if bowl_avg <= 30 and wickets >= 50:
-            return "Yes"
-    weighted_score = (bat_avg/100) + (sr/200) + (wickets/100) - (bowl_avg/100)
-    if weighted_score >= df['Batting Average'].median()/100:
+def predict_selection(row):
+    if row["Batting Average"] > 35 or row["Bowling Average"] < 30:
         return "Yes"
     return "No"
 
-df['Selected in Team'] = df.apply(is_selected, axis=1)
+def predict_next_match(row):
+    runs = row["Batting Average"] * np.random.uniform(0.8, 1.2)
+    wickets = row["Total Wickets"] / (row["Matches Played"] + 1) * np.random.uniform(0.8, 1.2)
+    return runs, wickets
 
-st.title("🏏 Cricket Player Role Prediction & Selection")
+st.title("Cricket Player Performance Predictor")
 
-player_name = st.selectbox("Select a Player", df['Player Name'].unique())
-player = df[df['Player Name'] == player_name].iloc[0]
+player_name = st.selectbox("Select a Player", df["Player Name"].unique())
 
-st.subheader(f"📊 Player Details: {player_name}")
-st.write(f"**Country:** {player['Country']}")
-st.write(f"**Matches Played:** {player['Matches Played']}")
-st.write(f"**Runs:** {player['Total Runs']}")
-st.write(f"**Wickets:** {player['Total Wickets']}")
-st.write(f"**Batting Avg:** {player['Batting Average']}")
-st.write(f"**Bowling Avg:** {player['Bowling Average']}")
-st.write(f"**Strike Rate:** {player['Strike Rate']}")
-st.write(f"### 🏷️ Predicted Role: {player['Predicted Role']}")
-st.write(f"### ✅ Selected in Team: {player['Selected in Team']}")
+player_data = df[df["Player Name"] == player_name].iloc[0]
 
-st.write("### 📈 Performance Trends by Role")
-plt.figure(figsize=(10,6))
-sns.lineplot(data=df, x="Matches Played", y="Total Runs", hue="Predicted Role", palette="dark:pastel")
-plt.title("Performance Trends (Dark Pastel Palette)")
-st.pyplot(plt)
+pred_role = predict_role(player_data)
+pred_selection = predict_selection(player_data)
+pred_runs, pred_wickets = predict_next_match(player_data)
 
-st.write("### 📊 Selection Distribution")
-plt.figure(figsize=(6,4))
-sns.countplot(data=df, x="Selected in Team", palette="Set2")
-plt.title("Selected vs Not Selected Players")
-st.pyplot(plt)
+st.subheader("Prediction Results")
+st.write(f"**Role:** {pred_role}")
+st.write(f"**Selected in Team:** {pred_selection}")
+st.write(f"**Predicted Runs Next Match:** {pred_runs:.2f}")
+st.write(f"**Predicted Wickets Next Match:** {pred_wickets:.2f}")
 
-st.write("### 📋 Dataset Preview")
-st.dataframe(df.head())
+st.subheader("Performance Trends")
+
+sns.set_palette("dark:pastel")
+fig, ax = plt.subplots(figsize=(8, 5))
+df_plot = df[df["Player Name"] == player_name][["Matches Played", "Total Runs", "Total Wickets"]]
+df_plot = df_plot.melt("Matches Played", var_name="Metric", value_name="Value")
+
+sns.lineplot(data=df_plot, x="Matches Played", y="Value", hue="Metric", ax=ax)
+ax.set_title(f"{player_name} - Performance Trends")
+st.pyplot(fig)

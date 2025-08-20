@@ -1,6 +1,5 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 import streamlit as st
@@ -19,18 +18,15 @@ features = ['Matches', 'Runs', 'Wickets', 'Batting Average', 'Bowling Average', 
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(df[features])
 
-kmeans = KMeans(n_clusters=3, random_state=0, n_init=10)
-df['Cluster'] = kmeans.fit_predict(X_scaled)
-
-cluster_role_map = {}
-for c in df['Cluster'].unique():
-    cluster_role_map[c] = df[df['Cluster']==c]['Role'].mode()[0]
-df['Role_from_Cluster'] = df['Cluster'].map(cluster_role_map)
+X_role = X_scaled
+y_role = df['Role']
+role_clf = RandomForestClassifier(random_state=42)
+role_clf.fit(X_role, y_role)
 
 df['Selected'] = 0
 formation = {'Batsman': 5, 'Bowler': 4, 'All-Rounder': 2}
 for role, count in formation.items():
-    role_players = df[df['Role_from_Cluster'] == role]
+    role_players = df[df['Role'] == role]
     role_players = role_players.sort_values(by='Matches', ascending=False)
     df.loc[role_players.head(count).index, 'Selected'] = 1
 
@@ -70,8 +66,7 @@ if st.button("Predict"):
     }])
 
     player_scaled = scaler.transform(player_df[features])
-    cluster = kmeans.predict(player_scaled)
-    role = cluster_role_map[cluster[0]]
+    role = role_clf.predict(player_scaled)[0]
     selected = clf.predict(player_scaled)[0]
     predicted_runs = reg_runs.predict(player_scaled)[0]
     predicted_wickets = reg_wickets.predict(player_scaled)[0]
@@ -83,19 +78,21 @@ if st.button("Predict"):
     st.write(f"**Predicted Wickets Next Match:** {predicted_wickets:.2f}")
 
     fig, ax = plt.subplots()
-    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets], color=['blue','green'])
+    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets], color=['#FFB3BA','#BAE1FF'])
     ax.set_ylabel("Performance")
     ax.set_title(f"Next Match Performance: {name}")
     st.pyplot(fig)
 
-st.subheader("Player Clusters")
+st.subheader("Average Player Stats by Role")
+role_stats = df.groupby('Role')[['Runs','Wickets','Strike Rate']].mean().reset_index()
 fig2, ax2 = plt.subplots()
-colors = {'Batsman':'red', 'Bowler':'blue', 'All-Rounder':'green'}
-for role_val in df['Role_from_Cluster'].unique():
-    subset = df[df['Role_from_Cluster'] == role_val]
-    ax2.scatter(subset['Strike Rate'], subset['Bowling Average'], label=role_val, c=colors[role_val])
-ax2.set_xlabel("Strike Rate")
-ax2.set_ylabel("Bowling Average")
-ax2.set_title("Player Clusters")
+colors = {'Batsman':'#FFB3BA', 'Bowler':'#BAE1FF', 'All-Rounder':'#BAFFC9'}
+
+for col in ['Runs','Wickets','Strike Rate']:
+    ax2.plot(role_stats['Role'], role_stats[col], marker='o', label=col)
+
+ax2.set_xlabel("Role")
+ax2.set_ylabel("Average Value")
+ax2.set_title("Average Stats by Role")
 ax2.legend()
 st.pyplot(fig2)

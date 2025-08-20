@@ -23,15 +23,8 @@ y_role = df['Role']
 role_clf = RandomForestClassifier(random_state=42)
 role_clf.fit(X_role, y_role)
 
-df['Selected'] = 0
-formation = {'Batsman': 5, 'Bowler': 4, 'All-Rounder': 2}
-for role, count in formation.items():
-    role_players = df[df['Role'] == role]
-    role_players = role_players.sort_values(by='Matches', ascending=False)
-    df.loc[role_players.head(count).index, 'Selected'] = 1
-
 X = X_scaled
-y = df['Selected']
+y = df['Selected'] if 'Selected' in df.columns else pd.Series([0]*len(df))
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 clf = RandomForestClassifier(random_state=42)
 clf.fit(X_train, y_train)
@@ -42,7 +35,7 @@ reg_wickets = RandomForestRegressor(random_state=42)
 reg_wickets.fit(X, df['Wickets'] / df['Matches'])
 
 st.title("CricketViz: Cricket Player Prediction App")
-st.write("Predicts player role, selection, and performance in next match.")
+st.write("Predicts player role, team selection, and performance in next match.")
 
 name = st.text_input("Player Name")
 country = st.text_input("Country")
@@ -67,7 +60,12 @@ if st.button("Predict"):
 
     player_scaled = scaler.transform(player_df[features])
     role = role_clf.predict(player_scaled)[0]
-    selected = clf.predict(player_scaled)[0]
+
+    # Dynamic team selection
+    role_count = {'Batsman': 5, 'Bowler': 4, 'All-Rounder': 2}
+    top_matches = df[df['Role'] == role]['Matches'].nlargest(role_count[role]).min()
+    selected = 1 if matches >= top_matches else 0
+
     predicted_runs = reg_runs.predict(player_scaled)[0]
     predicted_wickets = reg_wickets.predict(player_scaled)[0]
 
@@ -78,7 +76,7 @@ if st.button("Predict"):
     st.write(f"**Predicted Wickets Next Match:** {predicted_wickets:.2f}")
 
     fig, ax = plt.subplots()
-    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets], color=['#FFB3BA','#BAE1FF'])
+    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets], color=['#FFDAC1','#B5EAD7'])
     ax.set_ylabel("Performance")
     ax.set_title(f"Next Match Performance: {name}")
     st.pyplot(fig)
@@ -86,10 +84,10 @@ if st.button("Predict"):
 st.subheader("Average Player Stats by Role")
 role_stats = df.groupby('Role')[['Runs','Wickets','Strike Rate']].mean().reset_index()
 fig2, ax2 = plt.subplots()
-colors = {'Batsman':'#FFB3BA', 'Bowler':'#BAE1FF', 'All-Rounder':'#BAFFC9'}
+colors = {'Batsman':'#FFB7B2', 'Bowler':'#C7CEEA', 'All-Rounder':'#BFFCC6'}
 
 for col in ['Runs','Wickets','Strike Rate']:
-    ax2.plot(role_stats['Role'], role_stats[col], marker='o', label=col)
+    ax2.plot(role_stats['Role'], role_stats[col], marker='o', label=col, linewidth=2)
 
 ax2.set_xlabel("Role")
 ax2.set_ylabel("Average Value")

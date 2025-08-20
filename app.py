@@ -1,94 +1,68 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
 import streamlit as st
+import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("Cricketdata.csv")
+df = pd.read_csv(r"Cricketdata.csv")
 
-numeric_cols = ['Strike Rate', 'Bowling Average', 'Matches', 'Runs', 'Wickets', 'Batting Average']
-for col in numeric_cols:
-    if col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-df = df.dropna(subset=numeric_cols)
-df = df[df['Matches'] > 0]
+def predict_role(row):
+    if row['Total Wickets'] >= 150 and row['Batting Average'] < 25:
+        return "Bowler"
+    elif row['Total Runs'] >= 4000 and row['Batting Average'] >= 35:
+        return "Batsman"
+    elif row['Total Runs'] >= 2000 and row['Total Wickets'] >= 50:
+        return "All-Rounder"
+    else:
+        return "Batsman" if row['Batting Average'] > row['Bowling Average'] else "Bowler"
 
-features = ['Matches', 'Runs', 'Wickets', 'Batting Average', 'Bowling Average', 'Strike Rate']
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(df[features])
+df['Predicted Role'] = df.apply(predict_role, axis=1)
 
-X_role = X_scaled
-y_role = df['Role']
-role_clf = RandomForestClassifier(random_state=42)
-role_clf.fit(X_role, y_role)
+def is_selected(row):
+    role = row['Predicted Role']
+    bat_avg = row['Batting Average']
+    bowl_avg = row['Bowling Average']
+    sr = row['Strike Rate']
+    wickets = row['Total Wickets']
+    if role in ['Batsman', 'All-Rounder']:
+        if bat_avg >= 35 and sr >= 120:
+            return "Yes"
+    if role in ['Bowler', 'All-Rounder']:
+        if bowl_avg <= 30 and wickets >= 50:
+            return "Yes"
+    weighted_score = (bat_avg/100) + (sr/200) + (wickets/100) - (bowl_avg/100)
+    if weighted_score >= df['Batting Average'].median()/100:
+        return "Yes"
+    return "No"
 
-X = X_scaled
-y = df['Selected'] if 'Selected' in df.columns else pd.Series([0]*len(df))
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-clf = RandomForestClassifier(random_state=42)
-clf.fit(X_train, y_train)
+df['Selected in Team'] = df.apply(is_selected, axis=1)
 
-reg_runs = RandomForestRegressor(random_state=42)
-reg_runs.fit(X, df['Runs'] / df['Matches'])
-reg_wickets = RandomForestRegressor(random_state=42)
-reg_wickets.fit(X, df['Wickets'] / df['Matches'])
+st.title("🏏 Cricket Player Role Prediction & Selection")
 
-st.title("CricketViz: Cricket Player Prediction App")
-st.write("Predicts player role, team selection, and performance in next match.")
+player_name = st.selectbox("Select a Player", df['Player Name'].unique())
+player = df[df['Player Name'] == player_name].iloc[0]
 
-name = st.text_input("Player Name")
-country = st.text_input("Country")
-matches = st.number_input("Matches Played", min_value=0)
-runs = st.number_input("Total Runs", min_value=0)
-wickets = st.number_input("Total Wickets", min_value=0)
-bat_avg = st.number_input("Batting Average", min_value=0.0, format="%.2f")
-bowl_avg = st.number_input("Bowling Average", min_value=0.0, format="%.2f")
-strike_rate = st.number_input("Strike Rate", min_value=0.0, format="%.2f")
+st.subheader(f"📊 Player Details: {player_name}")
+st.write(f"**Country:** {player['Country']}")
+st.write(f"**Matches Played:** {player['Matches Played']}")
+st.write(f"**Runs:** {player['Total Runs']}")
+st.write(f"**Wickets:** {player['Total Wickets']}")
+st.write(f"**Batting Avg:** {player['Batting Average']}")
+st.write(f"**Bowling Avg:** {player['Bowling Average']}")
+st.write(f"**Strike Rate:** {player['Strike Rate']}")
+st.write(f"### 🏷️ Predicted Role: {player['Predicted Role']}")
+st.write(f"### ✅ Selected in Team: {player['Selected in Team']}")
 
-if st.button("Predict"):
-    player_df = pd.DataFrame([{
-        'Name': name,
-        'Country': country,
-        'Matches': matches,
-        'Runs': runs,
-        'Wickets': wickets,
-        'Batting Average': bat_avg,
-        'Bowling Average': bowl_avg,
-        'Strike Rate': strike_rate
-    }])
+st.write("### 📈 Performance Trends by Role")
+plt.figure(figsize=(10,6))
+sns.lineplot(data=df, x="Matches Played", y="Total Runs", hue="Predicted Role", palette="dark:pastel")
+plt.title("Performance Trends (Dark Pastel Palette)")
+st.pyplot(plt)
 
-    player_scaled = scaler.transform(player_df[features])
-    role = role_clf.predict(player_scaled)[0]
+st.write("### 📊 Selection Distribution")
+plt.figure(figsize=(6,4))
+sns.countplot(data=df, x="Selected in Team", palette="Set2")
+plt.title("Selected vs Not Selected Players")
+st.pyplot(plt)
 
-    score = 0.5 * (matches / df['Matches'].max()) + 0.3 * (runs / df['Runs'].max()) + 0.2 * (strike_rate / df['Strike Rate'].max())
-    selected = 1 if score >= 0.5 else 0
-
-    predicted_runs = reg_runs.predict(player_scaled)[0]
-    predicted_wickets = reg_wickets.predict(player_scaled)[0]
-
-    st.subheader("Prediction Results")
-    st.write(f"**Role:** {role}")
-    st.write(f"**Selected in Team:** {'Yes' if selected==1 else 'No'}")
-    st.write(f"**Predicted Runs Next Match:** {predicted_runs:.2f}")
-    st.write(f"**Predicted Wickets Next Match:** {predicted_wickets:.2f}")
-
-    fig, ax = plt.subplots()
-    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets], color=['#FFDAC1','#B5EAD7'])
-    ax.set_ylabel("Performance")
-    ax.set_title(f"Next Match Performance: {name}")
-    st.pyplot(fig)
-
-st.subheader("Average Player Stats by Role")
-role_stats = df.groupby('Role')[['Runs','Wickets','Strike Rate']].mean().reset_index()
-fig2, ax2 = plt.subplots()
-colors = {'Runs':'#FFB7B2', 'Wickets':'#C7CEEA', 'Strike Rate':'#BFFCC6'}
-
-for col in ['Runs','Wickets','Strike Rate']:
-    ax2.plot(role_stats['Role'], role_stats[col], marker='o', label=col, linewidth=2, color=colors[col])
-
-ax2.set_xlabel("Role")
-ax2.set_ylabel("Average Value")
-ax2.set_title("Average Stats by Role")
-ax2.legend()
-st.pyplot(fig2)
+st.write("### 📋 Dataset Preview")
+st.dataframe(df.head())

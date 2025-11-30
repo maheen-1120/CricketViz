@@ -43,16 +43,11 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 clf = RandomForestClassifier(random_state=42)
 clf.fit(X_train, y_train)
 
-batsmen = df[df['Role_from_Cluster'] == 'Batsman']
-bowlers = df[df['Role_from_Cluster'] == 'Bowler']
-
 reg_runs = RandomForestRegressor(random_state=42)
-if len(batsmen) > 0:
-    reg_runs.fit(scaler.transform(batsmen[features]), batsmen['Runs'] / batsmen['Matches'])
+reg_runs.fit(X, df['Runs'] / df['Matches'])
 
 reg_wickets = RandomForestRegressor(random_state=42)
-if len(bowlers) > 0:
-    reg_wickets.fit(scaler.transform(bowlers[features]), bowlers['Wickets'] / bowlers['Matches'])
+reg_wickets.fit(X, df['Wickets'] / df['Matches'])
 
 st.title("CricketViz")
 st.write("Predicts player role, selection, and performance in next match.")
@@ -83,15 +78,18 @@ if st.button("Predict"):
     role = cluster_role_map[cluster[0]]
     selected = clf.predict(player_scaled)[0]
 
+    base_runs = reg_runs.predict(player_scaled)[0]
+    base_wickets = reg_wickets.predict(player_scaled)[0]
+
     if role == "Batsman":
-        predicted_runs = reg_runs.predict(player_scaled)[0]
-        predicted_wickets = 0
+        predicted_runs = base_runs * 1.4
+        predicted_wickets = base_wickets * 0.4
     elif role == "Bowler":
-        predicted_runs = 0
-        predicted_wickets = reg_wickets.predict(player_scaled)[0]
+        predicted_runs = base_runs * 0.4
+        predicted_wickets = base_wickets * 1.4
     else:
-        predicted_runs = reg_runs.predict(player_scaled)[0] * 0.5
-        predicted_wickets = reg_wickets.predict(player_scaled)[0] * 0.5
+        predicted_runs = base_runs * 1.1
+        predicted_wickets = base_wickets * 1.1
 
     st.subheader("Prediction Results")
     st.write(f"**Role:** {role}")

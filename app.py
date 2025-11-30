@@ -1,9 +1,9 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 import streamlit as st
 
 df = pd.read_csv("Cricketdata.csv")
@@ -98,7 +98,9 @@ if st.button("Predict"):
     st.write(f"**Predicted Wickets Next Match:** {predicted_wickets:.2f}")
 
     fig, ax = plt.subplots()
-    ax.bar(['Predicted Runs', 'Predicted Wickets'], [predicted_runs, predicted_wickets])
+    ax.bar(['Predicted Runs', 'Predicted Wickets'],
+           [predicted_runs, predicted_wickets],
+           color=['#8A2BE2', '#32CD32'])
     ax.set_ylabel("Performance")
     ax.set_title(f"Prediction for {name}")
     st.pyplot(fig)
